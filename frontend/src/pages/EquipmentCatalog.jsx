@@ -1,13 +1,44 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import DataTable from '../components/shared/DataTable';
 import StatusBadge from '../components/shared/StatusBadge';
 import FilterBar from '../components/shared/FilterBar';
-import { equipmentData, EQUIPMENT_TYPES, LOCATIONS } from '../data/cmmsMockData';
+import api from '../services/api';
+
+const EQUIPMENT_TYPES = [
+  'Máy nén khí', 'Băng tải', 'Máy bơm', 'Motor điện', 'Máy cắt', 'Máy hàn',
+  'Cần cẩu', 'Máy phát điện', 'Biến áp', 'Tủ điện', 'Hệ thống HVAC'
+];
+
+const LOCATIONS = [
+  'Sản xuất', 'Đóng gói', 'Kho nguyên liệu', 'Kho thành phẩm', 'Tiện ích',
+  'Văn phòng', 'Bảo vệ', 'Xử lý nước thải', 'Trạm điện'
+];
 
 const EquipmentCatalog = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [filters, setFilters] = useState({});
+  const [equipments, setEquipments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchEquipments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get('/equipments');
+      setEquipments(response.data);
+    } catch (err) {
+      setError(err.message || 'Lỗi tải dữ liệu');
+      console.error('Fetch equipments error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEquipments();
+  }, []);
 
   // Filter configuration
   const filterConfig = [
@@ -62,7 +93,7 @@ const EquipmentCatalog = () => {
 
   // Filter data based on active filters
   const filteredData = useMemo(() => {
-    return equipmentData.filter(item => {
+    return equipments.filter(item => {
       return Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
         
@@ -77,7 +108,7 @@ const EquipmentCatalog = () => {
         return item[key]?.toString().toLowerCase().includes(value.toLowerCase());
       });
     });
-  }, [filters]);
+  }, [filters, equipments]);
 
   // Table columns configuration
   const columns = [
@@ -190,11 +221,16 @@ const EquipmentCatalog = () => {
             </svg>
           </button>
           <button
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
               if (confirm('Bạn có chắc chắn muốn xóa thiết bị này?')) {
-                // Handle delete
-                console.log('Delete equipment:', row.id);
+                try {
+                  await api.delete(`/equipments/${row.id}`);
+                  fetchEquipments();
+                  alert('Xóa thiết bị thành công');
+                } catch (err) {
+                  alert('Lỗi xóa thiết bị: ' + err.message);
+                }
               }
             }}
             className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
@@ -260,7 +296,7 @@ const EquipmentCatalog = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tổng thiết bị</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{filteredData.length}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{loading ? '...' : filteredData.length}</p>
             </div>
           </div>
         </div>
@@ -275,7 +311,7 @@ const EquipmentCatalog = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Hoạt động</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {filteredData.filter(eq => eq.status === 'active').length}
+                {loading ? '...' : filteredData.filter(eq => eq.status === 'active').length}
               </p>
             </div>
           </div>
@@ -312,7 +348,7 @@ const EquipmentCatalog = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Dừng hoạt động</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {filteredData.filter(eq => eq.status === 'stopped').length}
+                {loading ? '...' : filteredData.filter(eq => eq.status === 'stopped').length}
               </p>
             </div>
           </div>
@@ -328,7 +364,7 @@ const EquipmentCatalog = () => {
 
       {/* Equipment Table */}
       <DataTable
-        data={filteredData}
+        data={loading ? [] : filteredData}
         columns={columns}
         searchable={true}
         sortable={true}
@@ -339,6 +375,8 @@ const EquipmentCatalog = () => {
         onSelectionChange={(selectedItems) => {
           console.log('Selected equipment:', selectedItems);
         }}
+        loading={loading}
+        error={error}
       />
 
       {/* Equipment Detail Modal */}
@@ -493,7 +531,25 @@ const EquipmentCatalog = () => {
               </button>
             </div>
 
-            <form className="space-y-4">
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const data = Object.fromEntries(formData.entries());
+              try {
+                if (selectedEquipment) {
+                  await api.put(`/equipments/${selectedEquipment.id}`, data);
+                  alert('Cập nhật thành công');
+                } else {
+                  await api.post('/equipments', data);
+                  alert('Thêm mới thành công');
+                }
+                setShowForm(false);
+                setSelectedEquipment(null);
+                fetchEquipments();
+              } catch (err) {
+                alert('Lỗi lưu thiết bị: ' + err.message);
+              }
+            }} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -501,7 +557,9 @@ const EquipmentCatalog = () => {
                   </label>
                   <input
                     type="text"
+                    name="id"
                     defaultValue={selectedEquipment?.id || ''}
+                    required
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="VD: EQ001"
                   />
@@ -512,7 +570,9 @@ const EquipmentCatalog = () => {
                   </label>
                   <input
                     type="text"
+                    name="name"
                     defaultValue={selectedEquipment?.name || ''}
+                    required
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="Tên thiết bị"
                   />
@@ -588,9 +648,10 @@ const EquipmentCatalog = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                  disabled={loading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {selectedEquipment ? 'Cập nhật' : 'Thêm mới'}
+                  {loading ? 'Đang lưu...' : (selectedEquipment ? 'Cập nhật' : 'Thêm mới')}
                 </button>
               </div>
             </form>

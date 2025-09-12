@@ -1,11 +1,40 @@
-import React, { useState, useMemo } from 'react';
-import { detailedData } from '../../data/cmmsMockData';
+import React, { useState, useMemo, useEffect } from 'react';
+import api from '../../../services/api';
 
 const DataTable = ({ filters }) => {
+  const [detailedData, setDetailedData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [columnFilters, setColumnFilters] = useState({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/incidents');
+        // Map API data to table format
+        const mappedData = response.data.map(incident => ({
+          id: incident.id,
+          date: incident.occurredAt,
+          shift: 'Ca 1', // Default or compute from time
+          equipment: incident.equipmentName,
+          area: incident.location || 'Unknown', // Assume location in incident or from equipment
+          reason: incident.category,
+          duration: 30, // Default or compute from actualEnd - occurredAt
+          status: incident.status === 'resolved' ? 'Hoàn thành' : incident.status === 'investigating' ? 'Đang xử lý' : 'Mới'
+        }));
+        setDetailedData(mappedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Filter and sort data
   const filteredData = useMemo(() => {
@@ -14,7 +43,7 @@ const DataTable = ({ filters }) => {
     // Apply column filters
     Object.entries(columnFilters).forEach(([column, filterValue]) => {
       if (filterValue) {
-        data = data.filter(item => 
+        data = data.filter(item =>
           item[column]?.toString().toLowerCase().includes(filterValue.toLowerCase())
         );
       }
@@ -25,7 +54,7 @@ const DataTable = ({ filters }) => {
       data = data.filter(item => item.area === filters.area);
     }
     if (filters?.equipment) {
-      data = data.filter(item => 
+      data = data.filter(item =>
         item.equipment.toLowerCase().includes(filters.equipment.toLowerCase())
       );
     }
@@ -107,6 +136,10 @@ const DataTable = ({ filters }) => {
     }
     return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`;
   };
+
+  if (loading) {
+    return <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">Loading...</div>;
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">

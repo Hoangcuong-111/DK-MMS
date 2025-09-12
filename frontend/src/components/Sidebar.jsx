@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -136,9 +137,38 @@ const Sidebar = () => {
     }
   };
 
-  const handleSubItemClick = (subItem) => {
-    setActiveMenu(subItem.id);
-  };
+  // Clean reusable sub-menu item
+  const SubMenuItem = ({ subItem, activeMenu, setActiveMenu }) => (
+    <Link
+      to={subItem.path}
+      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
+        activeMenu === subItem.id
+          ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 border-l-2 border-blue-500'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+      }`}
+      onClick={() => setActiveMenu(subItem.id)}
+    >
+      {subItem.title}
+    </Link>
+  );
+
+  // Clean reusable main menu item
+  const MainMenuItem = ({ item, activeMenu, setActiveMenu }) => (
+    <Link
+      to={item.path}
+      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+        activeMenu === item.id
+          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+      }`}
+      onClick={() => setActiveMenu(item.id)}
+    >
+      <div className="flex items-center space-x-3">
+        {item.icon}
+        <span>{item.title}</span>
+      </div>
+    </Link>
+  );
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full overflow-y-auto">
@@ -146,23 +176,22 @@ const Sidebar = () => {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Menu chức năng
         </h2>
-        
         <nav className="space-y-1">
           {menuItems.map((item) => (
             <div key={item.id}>
-              <button
-                onClick={() => handleMenuClick(item)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                  activeMenu === item.id || (item.subItems && expandedMenus.includes(item.id))
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  {item.icon}
-                  <span>{item.title}</span>
-                </div>
-                {item.subItems && (
+              {item.subItems ? (
+                <button
+                  onClick={() => handleMenuClick(item)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                    activeMenu === item.id || expandedMenus.includes(item.id)
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </div>
                   <svg
                     className={`w-4 h-4 transition-transform duration-200 ${
                       expandedMenus.includes(item.id) ? 'rotate-90' : ''
@@ -172,24 +201,20 @@ const Sidebar = () => {
                   >
                     <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>
-                )}
-              </button>
-
+                </button>
+              ) : (
+                <MainMenuItem item={item} activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+              )}
               {/* Sub Items */}
               {item.subItems && expandedMenus.includes(item.id) && (
                 <div className="mt-1 ml-6 space-y-1">
                   {item.subItems.map((subItem) => (
-                    <button
+                    <SubMenuItem
                       key={subItem.id}
-                      onClick={() => handleSubItemClick(subItem)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
-                        activeMenu === subItem.id
-                          ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 border-l-2 border-blue-500'
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      }`}
-                    >
-                      {subItem.title}
-                    </button>
+                      subItem={subItem}
+                      activeMenu={activeMenu}
+                      setActiveMenu={setActiveMenu}
+                    />
                   ))}
                 </div>
               )}
@@ -197,7 +222,6 @@ const Sidebar = () => {
           ))}
         </nav>
       </div>
-
       {/* User Role Badge */}
       <div className="absolute bottom-4 left-4 right-4">
         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3">

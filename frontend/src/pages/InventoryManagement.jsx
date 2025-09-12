@@ -1,50 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import api from '../services/api';
 
 const InventoryManagement = () => {
-  const [inventory, setInventory] = useState([
-    {
-      id: 'PT001',
-      code: 'BRG-001',
-      name: 'Vòng bi SKF 6208',
-      category: 'Vòng bi',
-      unit: 'Cái',
-      currentStock: 15,
-      minStock: 10,
-      maxStock: 50,
-      unitPrice: 250000,
-      supplier: 'SKF Việt Nam',
-      location: 'Kho A-01',
-      linkedEquipment: ['Máy ép 01', 'Máy ép 02']
-    },
-    {
-      id: 'PT002',
-      code: 'OIL-001',
-      name: 'Dầu thủy lực Shell Tellus S2 M46',
-      category: 'Dầu nhớt',
-      unit: 'Lít',
-      currentStock: 85,
-      minStock: 100,
-      maxStock: 500,
-      unitPrice: 85000,
-      supplier: 'Shell Vietnam',
-      location: 'Kho B-02',
-      linkedEquipment: ['Máy ép 01', 'Băng tải A1']
-    },
-    {
-      id: 'PT003',
-      code: 'FLT-001',
-      name: 'Lọc dầu thủy lực Parker',
-      category: 'Bộ lọc',
-      unit: 'Cái',
-      currentStock: 8,
-      minStock: 5,
-      maxStock: 20,
-      unitPrice: 180000,
-      supplier: 'Parker Hannifin',
-      location: 'Kho A-02',
-      linkedEquipment: ['Máy ép 01', 'Máy ép 02']
-    }
-  ]);
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await api.get('/inventory');
+        setInventory(response.data);
+      } catch (error) {
+        console.error('Error fetching inventory:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, []);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
@@ -93,6 +68,23 @@ const InventoryManagement = () => {
   };
 
   const lowStockItems = inventory.filter(item => getStockStatus(item) === 'low');
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý tồn kho</h1>
+            <p className="text-gray-600 dark:text-gray-400">Quản lý phụ tùng và vật tư bảo trì</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Đang tải dữ liệu tồn kho...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -284,7 +276,7 @@ const InventoryManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredInventory.map((item) => (
+              {filteredInventory.length > 0 ? filteredInventory.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                     {item.code}
@@ -296,13 +288,13 @@ const InventoryManagement = () => {
                     {item.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {item.currentStock} {item.unit}
+                    {item.currentStock} {item.unit || ''}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {item.minStock} - {item.maxStock} {item.unit}
+                    {item.minStock || 0} - {item.maxStock || 0} {item.unit || ''}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {item.unitPrice.toLocaleString('vi-VN')} đ
+                    {(item.unitPrice || 0).toLocaleString('vi-VN')} đ
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {item.location}
@@ -323,7 +315,13 @@ const InventoryManagement = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan="9" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    Không có dữ liệu tồn kho
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

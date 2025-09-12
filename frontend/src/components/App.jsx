@@ -5,11 +5,11 @@ import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
-import EquipmentCatalog from './pages/EquipmentCatalog';
-import IncidentReport from './pages/IncidentReport';
-import InventoryManagement from './pages/InventoryManagement';
-import MaintenanceOrders from './pages/MaintenanceOrders';
-import MaintenanceSchedule from './pages/MaintenanceSchedule';
+import EquipmentCatalog from '../pages/EquipmentCatalog';
+import IncidentReport from '../pages/IncidentReport';
+import InventoryManagement from '../pages/InventoryManagement';
+import MaintenanceOrders from '../pages/MaintenanceOrders';
+import MaintenanceSchedule from '../pages/MaintenanceSchedule';
 import Toast from './components/ui/Toast';
 
 function App() {

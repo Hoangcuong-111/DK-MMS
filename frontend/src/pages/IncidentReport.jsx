@@ -1,37 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import api from '../services/api';
 
 const IncidentReport = () => {
-  const [incidents, setIncidents] = useState([
-    {
-      id: 'INC001',
-      title: 'Máy ép dừng đột ngột',
-      equipment: 'Máy ép thủy lực 01',
-      category: 'Cơ khí',
-      severity: 'Cao',
-      reporter: 'Nguyễn Văn D',
-      assignee: 'Trần Văn A',
-      reportDate: '2024-01-10T08:30:00',
-      status: 'Đang xử lý',
-      description: 'Máy ép dừng hoạt động đột ngột trong ca sản xuất, có tiếng kêu bất thường từ động cơ chính.'
-    },
-    {
-      id: 'INC002',
-      title: 'Lỗi cảm biến nhiệt độ',
-      equipment: 'Máy đóng gói 01',
-      category: 'Điện',
-      severity: 'Trung bình',
-      reporter: 'Lê Thị B',
-      assignee: 'Phạm Văn C',
-      reportDate: '2024-01-09T14:15:00',
-      status: 'Hoàn thành',
-      description: 'Cảm biến nhiệt độ hiển thị giá trị không chính xác, ảnh hưởng đến chất lượng đóng gói.'
-    }
-  ]);
+  const [incidents, setIncidents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterSeverity, setFilterSeverity] = useState('all');
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const response = await api.get('/incidents');
+        setIncidents(response.data);
+      } catch (error) {
+        console.error('Error fetching incidents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncidents();
+  }, []);
 
   const filteredIncidents = incidents.filter(incident => {
     const matchesCategory = filterCategory === 'all' || incident.category === filterCategory;
@@ -69,6 +62,23 @@ const IncidentReport = () => {
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ghi nhận sự cố</h1>
+            <p className="text-gray-600 dark:text-gray-400">Quản lý và theo dõi các sự cố thiết bị</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Đang tải dữ liệu sự cố...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -248,37 +258,37 @@ const IncidentReport = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredIncidents.map((incident) => (
+              {filteredIncidents.length > 0 ? filteredIncidents.map((incident) => (
                 <tr key={incident.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {incident.id}
+                    {incident.id || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {incident.title}
+                    {incident.title || 'Không có tiêu đề'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {incident.equipment}
+                    {incident.equipment || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {incident.category}
+                    {incident.category || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={getSeverityBadge(incident.severity)}>
-                      {incident.severity}
+                    <span className={getSeverityBadge(incident.severity || 'Thấp')}>
+                      {incident.severity || 'Thấp'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {incident.reporter}
+                    {incident.reporter || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {incident.assignee}
+                    {incident.assignee || 'Chưa phân công'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {new Date(incident.reportDate).toLocaleDateString('vi-VN')}
+                    {incident.reportDate ? new Date(incident.reportDate).toLocaleDateString('vi-VN') : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={getStatusBadge(incident.status)}>
-                      {incident.status}
+                    <span className={getStatusBadge(incident.status || 'Chờ phân công')}>
+                      {incident.status || 'Chờ phân công'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -292,7 +302,13 @@ const IncidentReport = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan="10" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    Không có dữ liệu sự cố
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
