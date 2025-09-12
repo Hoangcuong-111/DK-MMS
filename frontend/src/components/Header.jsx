@@ -13,7 +13,7 @@ const Header = () => {
               <span className="text-white font-bold text-lg">DK</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">DK CMMS</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">DK MMS</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Báo cáo</p>
             </div>
           </div>

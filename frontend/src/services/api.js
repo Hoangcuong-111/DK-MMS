@@ -35,10 +35,6 @@ api.interceptors.response.use(
   }
 );
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  next(err);
-});
 
 export default api;
 

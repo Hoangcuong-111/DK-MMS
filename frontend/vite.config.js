@@ -7,4 +7,15 @@ export default defineConfig({
   plugins: [viteSourceLocator({
     prefix: "mgx",
   }), react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
+  }
 })

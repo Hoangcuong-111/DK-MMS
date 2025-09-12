@@ -5,11 +5,12 @@ import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
-import EquipmentCatalog from '../pages/EquipmentCatalog';
-import IncidentReport from '../pages/IncidentReport';
-import InventoryManagement from '../pages/InventoryManagement';
-import MaintenanceOrders from '../pages/MaintenanceOrders';
-import MaintenanceSchedule from '../pages/MaintenanceSchedule';
+import React, { Suspense, lazy } from 'react';
+const EquipmentCatalog = lazy(() => import('../pages/EquipmentCatalog'));
+const IncidentReport = lazy(() => import('../pages/IncidentReport'));
+const InventoryManagement = lazy(() => import('../pages/InventoryManagement'));
+const MaintenanceOrders = lazy(() => import('../pages/MaintenanceOrders'));
+const MaintenanceSchedule = lazy(() => import('../pages/MaintenanceSchedule'));
 import Toast from './components/ui/Toast';
 
 function App() {
@@ -23,14 +24,16 @@ function App() {
               <Sidebar />
               <main className="flex-1 overflow-auto">
                 <div className="max-w-full px-6 py-8">
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/equipment" element={<EquipmentCatalog />} />
-                    <Route path="/incidents" element={<IncidentReport />} />
-                    <Route path="/inventory" element={<InventoryManagement />} />
-                    <Route path="/maintenance-orders" element={<MaintenanceOrders />} />
-                    <Route path="/maintenance-schedule" element={<MaintenanceSchedule />} />
-                  </Routes>
+                  <Suspense fallback={<div className="text-center py-12">Đang tải trang...</div>}>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/equipment" element={<EquipmentCatalog />} />
+                      <Route path="/incidents" element={<IncidentReport />} />
+                      <Route path="/inventory" element={<InventoryManagement />} />
+                      <Route path="/maintenance-orders" element={<MaintenanceOrders />} />
+                      <Route path="/maintenance-schedule" element={<MaintenanceSchedule />} />
+                    </Routes>
+                  </Suspense>
                 </div>
               </main>
             </div>
