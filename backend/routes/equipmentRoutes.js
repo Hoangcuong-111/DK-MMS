@@ -1,6 +1,77 @@
 const express = require('express');
 const router = express.Router();
+const Joi = require('joi');
 const EquipmentModel = require('../models/EquipmentModel');
+
+// Joi validation schema for equipment create
+const createEquipmentSchema = Joi.object({
+  id: Joi.string().pattern(/^EQ\d{3}$/).required().messages({
+    'string.pattern.base': 'Mã thiết bị phải theo định dạng EQ + 3 chữ số',
+    'any.required': 'Mã thiết bị là bắt buộc',
+  }),
+  name: Joi.string().max(100).required().messages({
+    'string.empty': 'Tên thiết bị là bắt buộc',
+    'string.max': 'Tên thiết bị không được vượt quá 100 ký tự',
+    'any.required': 'Tên thiết bị là bắt buộc',
+  }),
+  type: Joi.string().max(50).required().messages({
+    'string.empty': 'Loại thiết bị là bắt buộc',
+    'string.max': 'Loại thiết bị không được vượt quá 50 ký tự',
+    'any.required': 'Loại thiết bị là bắt buộc',
+  }),
+  location: Joi.string().max(50).required().messages({
+    'string.empty': 'Khu vực là bắt buộc',
+    'string.max': 'Khu vực không được vượt quá 50 ký tự',
+    'any.required': 'Khu vực là bắt buộc',
+  }),
+  manufacturer: Joi.string().max(100),
+  model: Joi.string().max(50),
+  serialNumber: Joi.string().alphanum().max(20),
+  installationYear: Joi.number().integer().min(1900).max(new Date().getFullYear()).messages({
+    'number.min': 'Năm lắp đặt không được nhỏ hơn 1900',
+    'number.max': 'Năm lắp đặt không được lớn hơn năm hiện tại',
+  }),
+  criticality: Joi.number().integer().min(1).max(5).messages({
+    'number.min': 'Mức độ quan trọng phải từ 1 đến 5',
+    'number.max': 'Mức độ quan trọng phải từ 1 đến 5',
+  }),
+  status: Joi.string().valid('active', 'maintenance', 'stopped', 'retired').default('active').messages({
+    'any.only': 'Trạng thái không hợp lệ',
+  }),
+  technicalSpecs: Joi.object(),
+  nextMaintenance: Joi.date(),
+  documents: Joi.array(),
+});
+
+// Joi validation schema for equipment update
+const updateEquipmentSchema = Joi.object({
+  name: Joi.string().max(100).messages({
+    'string.max': 'Tên thiết bị không được vượt quá 100 ký tự',
+  }),
+  type: Joi.string().max(50).messages({
+    'string.max': 'Loại thiết bị không được vượt quá 50 ký tự',
+  }),
+  location: Joi.string().max(50).messages({
+    'string.max': 'Khu vực không được vượt quá 50 ký tự',
+  }),
+  manufacturer: Joi.string().max(100),
+  model: Joi.string().max(50),
+  serialNumber: Joi.string().alphanum().max(20),
+  installationYear: Joi.number().integer().min(1900).max(new Date().getFullYear()).messages({
+    'number.min': 'Năm lắp đặt không được nhỏ hơn 1900',
+    'number.max': 'Năm lắp đặt không được lớn hơn năm hiện tại',
+  }),
+  criticality: Joi.number().integer().min(1).max(5).messages({
+    'number.min': 'Mức độ quan trọng phải từ 1 đến 5',
+    'number.max': 'Mức độ quan trọng phải từ 1 đến 5',
+  }),
+  status: Joi.string().valid('active', 'maintenance', 'stopped', 'retired').messages({
+    'any.only': 'Trạng thái không hợp lệ',
+  }),
+  technicalSpecs: Joi.object(),
+  nextMaintenance: Joi.date(),
+  documents: Joi.array(),
+});
 
 /**
  * @route GET /api/equipments
@@ -53,12 +124,16 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
+    const { error } = createEquipmentSchema.validate(req.body);
+    if (error) {
+      throw new Error(error.details[0].message);
+    }
     const newEquipment = await EquipmentModel.create(req.body);
     res.status(201).json(newEquipment);
   } catch (error) {
-    res.status(400).json({ 
-      message: 'Lỗi tạo thiết bị', 
-      error: error.message 
+    res.status(400).json({
+      message: 'Lỗi tạo thiết bị',
+      error: error.message
     });
   }
 });
@@ -70,12 +145,16 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
   try {
+    const { error } = updateEquipmentSchema.validate(req.body);
+    if (error) {
+      throw new Error(error.details[0].message);
+    }
     const updatedEquipment = await EquipmentModel.update(req.params.id, req.body);
     res.json(updatedEquipment);
   } catch (error) {
-    res.status(400).json({ 
-      message: 'Lỗi cập nhật thiết bị', 
-      error: error.message 
+    res.status(400).json({
+      message: 'Lỗi cập nhật thiết bị',
+      error: error.message
     });
   }
 });

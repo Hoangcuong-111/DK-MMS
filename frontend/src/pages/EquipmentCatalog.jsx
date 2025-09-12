@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import DataTable from '../components/shared/DataTable';
-import StatusBadge from '../components/shared/StatusBadge';
-import FilterBar from '../components/shared/FilterBar';
+import DataTable from '../components/SharedComponent/DataTable';
+import StatusBadge from '../components/SharedComponent/StatusBadge';
+import FilterBar from '../components/SharedComponent/FilterBar';
 import api from '../services/api';
 
 const EQUIPMENT_TYPES = [

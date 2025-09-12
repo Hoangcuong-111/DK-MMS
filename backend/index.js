@@ -1,13 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-require('dotenv').config();
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
 const equipmentRoutes = require('./routes/equipmentRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const incidentRoutes = require('./routes/incidentRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 
 // Middleware
 const authMiddleware = require('./middleware/authMiddleware');
@@ -31,9 +32,10 @@ app.use((req, res, next) => {
 app.use('/api/users', userRoutes);
 
 // Middleware xác thực cho các route yêu cầu đăng nhập
-app.use('/api/equipments', authMiddleware, equipmentRoutes);
-app.use('/api/maintenances', authMiddleware, maintenanceRoutes);
-app.use('/api/incidents', authMiddleware, incidentRoutes);
+app.use('/api/equipments', authMiddleware.authMiddleware, equipmentRoutes);
+app.use('/api/maintenances', authMiddleware.authMiddleware, maintenanceRoutes);
+app.use('/api/incidents', authMiddleware.authMiddleware, incidentRoutes);
+app.use('/api/inventories', authMiddleware.authMiddleware, inventoryRoutes);
 
 // Route gốc
 app.get('/', (req, res) => {
@@ -41,6 +43,11 @@ app.get('/', (req, res) => {
     message: 'CMMS Dashboard Backend đã sẵn sàng', 
     version: '1.0.0' 
   });
+});
+
+// ✅ Route kiểm tra tình trạng server (healthcheck)
+app.get('/health', (req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() });
 });
 
 // Middleware xử lý lỗi

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import FilterBar from './shared/FilterBar';
-import KPISection from './kpi/KPISection';
-import DowntimeReasonChart from './charts/DowntimeReasonChart';
-import EquipmentStatusChart from './charts/EquipmentStatusChart';
-import MaintenanceScheduleChart from './charts/MaintenanceScheduleChart';
-import WorkOrderStatusChart from './charts/WorkOrderStatusChart';
-import InventoryStatusChart from './charts/InventoryStatusChart';
-import RecentIncidents from './tables/RecentIncidents';
+import FilterBar from '../SharedComponent/FilterBar';
+import KPISection from '../kpi/KPISection';
+import DowntimeReasonChart from '../charts/DowntimeReasonChart';
+import EquipmentStatusChart from '../charts/EquipmentStatusChart';
+import MaintenanceScheduleChart from '../charts/MaintenanceScheduleChart';
+import WorkOrderStatusChart from '../charts/WorkOrderStatusChart';
+import InventoryStatusChart from '../charts/InventoryStatusChart';
+import RecentIncidents from '../tables/RecentIncidents';
 
 const Dashboard = () => {
   const [filters, setFilters] = useState({
