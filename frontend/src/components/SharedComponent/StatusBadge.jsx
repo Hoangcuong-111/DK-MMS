@@ -1,3 +1,4 @@
+import styles from './StatusBadge.module.scss';
 import React from 'react';
 
 const StatusBadge = ({ status, type = 'default', size = 'sm' }) => {
@@ -70,11 +71,13 @@ const StatusBadge = ({ status, type = 'default', size = 'sm' }) => {
   };
 
   return (
-    <span className={`
-      inline-flex items-center font-medium rounded-full
-      ${colorClasses[config.color] || colorClasses.gray}
-      ${sizeClasses[size]}
-    `}>
+    <span
+      className={[
+        styles.statusBadge,
+        colorClasses[config.color] || colorClasses.gray,
+        sizeClasses[size]
+      ].join(' ')}
+    >
       <span className="mr-1">{config.icon}</span>
       {config.label}
     </span>

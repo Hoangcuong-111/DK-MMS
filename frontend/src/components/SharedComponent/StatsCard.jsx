@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './StatsCard.module.scss';
 
 const StatsCard = ({ title, value, change, trend, icon }) => {
   return (
@@ -45,6 +46,7 @@ const StatsCard = ({ title, value, change, trend, icon }) => {
           <span className="text-xs text-gray-500 ml-2">vs last month</span>
         </div>
       </div>
+      <div className={styles.statsCard}>...</div>
     </div>
   );
 };

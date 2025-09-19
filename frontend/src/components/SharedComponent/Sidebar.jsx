@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
+import styles from './Sidebar.module.scss';
   const [expandedMenus, setExpandedMenus] = useState(['dashboard']);
 
   const toggleMenu = (menuId) => {
@@ -172,7 +173,7 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full overflow-y-auto">
-      <div className="p-4">
+      <div className={styles.sidebar}>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Menu chức năng
         </h2>

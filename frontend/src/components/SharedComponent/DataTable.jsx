@@ -1,3 +1,4 @@
+import styles from './DataTable.module.scss';
 import React, { useState, useMemo } from 'react';
 
 const DataTable = ({
@@ -63,6 +64,7 @@ const DataTable = ({
   }, [filteredData, sortConfig]);
 
   // ...existing code...
+  // Ví dụ sử dụng: <div className={styles.tableWrapper}>...</div>
 };
 
 export default DataTable;

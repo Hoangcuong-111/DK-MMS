@@ -1,3 +1,4 @@
+import styles from './FilterBar.module.scss';
 import React, { useState } from 'react';
 
 const FilterBar = ({
@@ -46,6 +47,7 @@ const FilterBar = ({
   };
 
   // ...existing code...
+  // Ví dụ sử dụng: <div className={styles.filterBar}>...</div>
 };
 
 export default FilterBar;
